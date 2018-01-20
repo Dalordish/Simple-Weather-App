@@ -55,12 +55,33 @@ function getWeather() {
 
 $(document).ready(function() {
   $.getJSON('https://freegeoip.net/json/', function(result) {
-    $("#ip").html("You are connecting from " + result.ip);
-    $("#location").html("This means you are at " + result.city + ", " + result.region_name + ", " + result.zip_code + ", " + result.country_name);
-    $("#coordinate").html("Lat : " + result.latitude + " Long : " + result.longitude)
     lat = result.latitude;
     lon = result.longitude;
+    $("#ip").html("You are connecting from " + result.ip);
+    $("#location").html("This means you are at " + result.city + ", " + result.region_name + ", " + result.zip_code + ", " + result.country_name);
+    $("#coordinate").html("Lat : " + lat + " Long : " + lon)
     getWeather();
+  })
+  .fail(function() {
+    console.log("failed :(");
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        lat = position.coords.latitude;
+        lon = position.coords.longitude;
+        $("#coordinate").html("Lat : " + lat + " Long : " + lon)
+        $("#ip").html("Geoip failed, switching to HTML location...");
+        $("#location").html("The weather is currently:");
+        getWeather();
+      },
+      function(error) {
+        $("#ip").html("Error: Both Geoip lookup and HTML5 location failed. Try disabling your adblocker or enabling location services.");
+        $("#location").html("ERROR");
+      });
+    }
+    else {
+      $("#ip").html("Error: Both Geoip lookup and HTML5 location failed. Try disabling your adblocker or enabling location services.");
+      $("#location").html("ERROR");
+    }
   });
 
   $("#type").on("click", function() {
